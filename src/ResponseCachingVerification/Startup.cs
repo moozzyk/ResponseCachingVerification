@@ -19,12 +19,13 @@ namespace ResponseCachingVerification
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
             loggerFactory.AddConsole();
-            app.UseResponseCache();
-
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseResponseCache();
+            app.UseFileServer();
 
             app.Run(async (context) =>
             {

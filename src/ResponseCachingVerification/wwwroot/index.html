@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Request sender</title>
+</head>
+<body>
+    <script>
+        function get(headers) {
+            return xhr('GET', headers);
+        }
+
+        function post(headers) {
+            return xhr('POST', headers);
+        }
+
+        function xhr(method, headers) {
+            return new Promise((resolve, reject) => {
+                var request = new XMLHttpRequest();
+                request.onload = () => {
+                    if (request.status >= 200 && request.status < 300) {
+                        resolve(request.response);
+                    }
+                    else {
+                        reject({
+                            status: request.status,
+                            statusText: request.statusText
+                        });
+                    }
+                }
+
+                request.onerror = () => {
+                    reject({
+                        status: request.status,
+                        statusText: request.statusText
+                    });
+                };
+
+                request.open(method, '/test', true);
+                request.setRequestHeader("Content-Type", "text/plain");
+
+                for (var key in headers) {
+                    if (p.hasOwnProperty(key)) {
+                        request.setRequestHeader(key, headers[key]);
+                    }
+                }
+
+                request.send();
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('sendrequest').addEventListener('submit', event => {
+                let status = document.getElementById('status');
+                get({}).then(result => {
+                    status.textContent = result;
+                }).catch(e => {
+                    status.textContent = JSON.stringify(e);
+                });
+                event.preventDefault();
+            });
+        });
+    </script>
+
+    <ul id="headers"></ul>
+
+    <form id="sendrequest">
+        <input type="submit" value="Send" />
+    </form>
+    <div>
+        <span id="status"></span>
+    </div>
+</body>
+</html>
