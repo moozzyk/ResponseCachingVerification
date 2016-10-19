@@ -5,15 +5,7 @@
 </head>
 <body>
     <script>
-        function get(headers) {
-            return xhr('GET', headers);
-        }
-
-        function post(headers) {
-            return xhr('POST', headers);
-        }
-
-        function xhr(method, headers) {
+        function xhr(url, method, headers) {
             return new Promise((resolve, reject) => {
                 var request = new XMLHttpRequest();
                 request.onload = () => {
@@ -35,11 +27,11 @@
                     });
                 };
 
-                request.open(method, '/test', true);
+                request.open(method, url, true);
                 request.setRequestHeader("Content-Type", "text/plain");
 
                 for (var key in headers) {
-                    if (p.hasOwnProperty(key)) {
+                    if (headers.hasOwnProperty(key)) {
                         request.setRequestHeader(key, headers[key]);
                     }
                 }
@@ -48,10 +40,33 @@
             });
         }
 
+        function parseQuery(qstr) {
+            var query = {};
+            var a = qstr.substr(1).split('&');
+            for (var i = 0; i < a.length; i++) {
+                var b = a[i].split('=');
+                query[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || '');
+            }
+            return query;
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('url').value = parseQuery(document.location.search).url || "";
             document.getElementById('sendrequest').addEventListener('submit', event => {
                 let status = document.getElementById('status');
-                get({}).then(result => {
+                let headers = {};
+                let methodDropdown = document.getElementById('method');
+                let method = methodDropdown.options[methodDropdown.selectedIndex].value;
+
+                if (document.getElementById('cacheControlHeader').checked) {
+                    headers["Cache-Control"] = document.getElementById('cacheControlValue').value;
+                }
+
+                if (document.getElementById('pragmaHeader').checked) {
+                    headers["Pragme"] = document.getElementById('pragmaValue').value;
+                }
+
+                xhr((document.getElementById('url').value || "") + document.location.search, method, headers).then(result => {
                     status.textContent = result;
                 }).catch(e => {
                     status.textContent = JSON.stringify(e);
@@ -61,9 +76,19 @@
         });
     </script>
 
-    <ul id="headers"></ul>
-
     <form id="sendrequest">
+
+        <input type="text" id="url"/>
+        <select id="method">
+            <option>GET</option>
+            <option>POST</option>
+            <option>HEAD</option>
+        </select>
+        <ul id="headers">
+            <li><input type="checkbox" id="cacheControlHeader" />Cache-Control: <input type="text" id="cacheControlValue" /></li>
+            <li><input type="checkbox" id="pragmaHeader" />Pragma: <input type="text" id="pragmaValue" /></li>
+        </ul>
+
         <input type="submit" value="Send" />
     </form>
     <div>
