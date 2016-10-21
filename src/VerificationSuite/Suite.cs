@@ -416,6 +416,15 @@ namespace VerificationSuite
             await VerifyResponseEqual(resp1, resp2);
         }
 
+        [Fact]
+        public async Task Responses_bigger_than_limit_not_cached()
+        {
+            var queryString = $"{Guid.NewGuid().ToString()}?Cache-Control=public&append=1025";
+            await VerifyResponseNotEqual(
+                await SendRequest("GET", queryString),
+                await SendRequest("GET", queryString));
+        }
+
         private async Task VerifyResponseNotEqual(WebResponse resp1, WebResponse resp2)
         {
             if (((HttpWebResponse)resp1).Method != "HEAD" && ((HttpWebResponse)resp2).Method != "HEAD")

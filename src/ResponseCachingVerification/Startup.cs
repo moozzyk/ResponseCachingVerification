@@ -48,6 +48,12 @@ namespace ResponseCachingVerification
                 {
                     await context.Response.WriteAsync("Hello World!\n" + DateTime.Now.ToString("o"));
                 }
+
+                int append;
+                if (int.TryParse(context.Request.Query["Append"], out append))
+                {
+                    await context.Response.WriteAsync(new string('a', append));
+                }
             });
         }
     }
