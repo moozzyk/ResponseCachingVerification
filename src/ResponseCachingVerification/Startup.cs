@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.ResponseCaching;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -13,7 +14,7 @@ namespace ResponseCachingVerification
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMemoryResponseCacheStore();
+            services.AddResponseCaching(options => options.MaximumBodySize = 1024);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -25,7 +26,7 @@ namespace ResponseCachingVerification
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseResponseCache();
+            app.UseResponseCaching();
             app.UseFileServer();
 
             app.Run(async (context) =>
@@ -34,8 +35,13 @@ namespace ResponseCachingVerification
                 {
                     context.Response.Headers[q.Key] = q.Value;
                 }
-                // context.Request.Query
-                // context.Response.Headers["Cache-Control"] = "public";
+
+                foreach (var q in context.Request.Query["VaryByQueryKeys"])
+                {
+                    context.Features.Get<IResponseCachingFeature>().VaryByQueryKeys =
+                        context.Request.Query["VaryByQueryKeys"];
+                }
+
                 context.Response.Headers["X-my-time"] = DateTime.Now.ToString("o");
 
                 if (context.Request.Method != "HEAD")
