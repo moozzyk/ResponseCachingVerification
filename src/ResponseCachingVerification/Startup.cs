@@ -14,7 +14,14 @@ namespace ResponseCachingVerification
         // For more information on how to configure your application, visit http://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddResponseCaching(options => options.MaximumBodySize = 1024);
+            services.AddResponseCaching(
+                options => {
+                    options.MaximumBodySize = 1024;
+                    if (Environment.GetEnvironmentVariable("CASE_SENSITIVE") == "1")
+                    {
+                        options.UseCaseSensitivePaths = true;
+                    }
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

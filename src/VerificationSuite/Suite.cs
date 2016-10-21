@@ -37,6 +37,17 @@ namespace VerificationSuite
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
+        public async Task Cached_response_served_if_path_casing_differ(string method)
+        {
+            var queryString = Guid.NewGuid().ToString();
+            await VerifyResponseEqual(
+                await SendRequest(method, $"{queryString.ToUpperInvariant()}?Cache-Control=public"),
+                await SendRequest(method, $"{queryString.ToLowerInvariant()}?Cache-Control=public"));
+        }
+
+        [Theory]
+        [InlineData("GET")]
+        [InlineData("HEAD")]
         public async Task Cached_response_returned_if_queryString_differ(string method)
         {
             var queryString = $"{Guid.NewGuid().ToString()}?Cache-Control=public";
